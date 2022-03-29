@@ -5,12 +5,45 @@
 #include <iostream>
 #include <sstream>
 
-class Lector
+using namespace std;
+
+void lectorArchivoSecuencial(char archivo)
 {
-    
+  char c[2];
+  string line;
+  int lineCount = 0;
+  string word;
+  int wordCount = 0;
+  char letter;
+  int charCount = 0;
+
+
+  int stream  = open(archivo, O_RDONLY);
+
+  if(stream == -1)
+  {
+    std::cout << "Error al abrir archivo" << std::endl;
+  }
+
+  while(read(stream,c,1))
+  {
+    if(c[0] == '\n')
+    {
+      lineCount++;
+      wordCount++:
+    }
+    else if(c[0] == ' ')
+    {
+      wordCount++;
+    }
+
+    charCount++;
+  }
+  close (stream);
+
 }
 
-void *buscarLetras (void *param) {
+/*void *buscarLetras (void *param) {
   char *str;
   char c[2];
   int cnt = 0;
@@ -41,21 +74,28 @@ void *buscarLetras (void *param) {
   std::cout << t;
 
   pthread_exit(0);
-}
+}*/
 
 int main(int argc, char *argv[]) {
+  /*
   pthread_t threads[argc - 1];
   int i = 0;
 
-  /* Crea todos los hilos */
+  //Crea todos los hilos 
   for (i=0; i < argc - 1; i++) {
     pthread_create(&threads[i], NULL, buscarLetras, argv[i+1]);
   }
 
-  /* Para esperar por el término de todos los hilos */
+  //Para esperar por el término de todos los hilos 
   for (i=0; i< argc - 1; i++) {
     pthread_join(threads[i], NULL);
   }
+  */
+  for(int i = 0; i < argc -1; i++)
+  {
+    lectorArchivoSecuencial(argv[i+1]);
+  }
+
 
   return 0;
 }
