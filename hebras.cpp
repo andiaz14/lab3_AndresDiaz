@@ -7,14 +7,14 @@
 
 using namespace std;
 
-void lectorArchivoSecuencial(char archivo)
+void lectorArchivoSecuencial(char* archivo)
 {
   char c[2];
   string line;
   int lineCount = 0;
   string word;
   int wordCount = 0;
-  char letter;
+  string letter;
   int charCount = 0;
 
 
@@ -23,6 +23,7 @@ void lectorArchivoSecuencial(char archivo)
   if(stream == -1)
   {
     std::cout << "Error al abrir archivo" << std::endl;
+    return;
   }
 
   while(read(stream,c,1))
@@ -30,27 +31,49 @@ void lectorArchivoSecuencial(char archivo)
     if(c[0] == '\n')
     {
       lineCount++;
-      wordCount++:
+      wordCount++;
     }
     else if(c[0] == ' ')
     {
       wordCount++;
     }
-
-    charCount++;
+    else if((c[0] >= 'a' && c[0] <= 'z')||(c[0]>='A' && c[0]<='Z'))
+    {
+      charCount++;
+    }
   }
   close (stream);
 
+  std::ostringstream oss;
+  oss << lineCount;
+  line = oss.str();
+  std::ostringstream oss1;
+  oss1 << wordCount;
+  word = oss1.str();
+  std::ostringstream oss2;
+  oss2 << charCount;
+  letter = oss2.str();
+
+
+  string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
+
+  std::cout<< str;
+
 }
 
-/*void *buscarLetras (void *param) {
-  char *str;
+void *lectorArchivoThread (void *param) {
+  char *archivo;
   char c[2];
-  int cnt = 0;
+  string line;
+  int lineCount = 0;
+  string word;
+  int wordCount = 0;
+  string letter;
+  int charCount = 0;
 
-  str = (char *) param;
+  archivo = (char *) param;
 
-  int stream = open ("filename.txt", O_RDONLY);
+  int stream = open (archivo, O_RDONLY);
 
   if (stream == -1) {
     std::cout << "Error al abrir archivo" << std::endl;
@@ -58,25 +81,47 @@ void lectorArchivoSecuencial(char archivo)
   }
 
   while (read(stream,c,1)) {
-    if (strchr(str,c[0])) {
-      cnt++;
-      std::string t = "Encontró: " + (std::string ) str + "\n";
-      std::cout << t;
-      sleep(1);
+    if(c[0] == '\n')
+    {
+      lineCount++;
+      wordCount++;
+    }
+    else if(c[0] == ' ')
+    {
+      wordCount++;
+    }
+    else if((c[0] >= 'a' && c[0] <= 'z')||(c[0]>='A' && c[0]<='Z'))
+    {
+      charCount++;
     }
   }
   close (stream);
   
-  // Para convertir un número en string.
   std::ostringstream oss;
-  oss << cnt;
-  std::string t = "Caracter: " + (std::string ) str + "[" + oss.str() + " ocurencias]" + "\n";
-  std::cout << t;
+  oss << lineCount;
+  line = oss.str();
+  std::ostringstream oss1;
+  oss1 << wordCount;
+  word = oss1.str();
+  std::ostringstream oss2;
+  oss2 << charCount;
+  letter = oss2.str();
+
+
+  string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
+
+  std::cout<< str;
 
   pthread_exit(0);
-}*/
+}
+
 
 int main(int argc, char *argv[]) {
+
+  for(int i = 0; i < argc -1; i++)
+  {
+    lectorArchivoSecuencial(argv[i+1]);
+  }
   /*
   pthread_t threads[argc - 1];
   int i = 0;
@@ -91,10 +136,7 @@ int main(int argc, char *argv[]) {
     pthread_join(threads[i], NULL);
   }
   */
-  for(int i = 0; i < argc -1; i++)
-  {
-    lectorArchivoSecuencial(argv[i+1]);
-  }
+  
 
 
   return 0;
