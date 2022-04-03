@@ -4,6 +4,7 @@
 #include <string.h>
 #include <iostream>
 #include <sstream>
+#include <chrono>
 
 using namespace std;
 
@@ -57,7 +58,7 @@ void lectorArchivoSecuencial(char* archivo)
 
   string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
 
-  std::cout<< str;
+  std::cout << "texto: " << archivo << ", " << str;
 
 }
 
@@ -110,7 +111,7 @@ void *lectorArchivoThread (void *param) {
 
   string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
 
-  std::cout<< str;
+  std::cout << "texto: " << archivo << ", " << str;
 
   pthread_exit(0);
 }
@@ -118,26 +119,37 @@ void *lectorArchivoThread (void *param) {
 
 int main(int argc, char *argv[]) {
 
+  std::cout << "Secuencial" << '\n';
+  auto start = chrono::system_clock::now();
+
   for(int i = 0; i < argc -1; i++)
   {
     lectorArchivoSecuencial(argv[i+1]);
   }
-  /*
+
+  auto end = chrono::system_clock::now();
+  chrono::duration<double> segundos = end - start;
+
+  std::cout << "segundos: " << segundos.count() << '\n';
+  std::cout << "Por hebras." << '\n';
+  start = chrono::system_clock::now();
   pthread_t threads[argc - 1];
   int i = 0;
-
+  
   //Crea todos los hilos 
   for (i=0; i < argc - 1; i++) {
-    pthread_create(&threads[i], NULL, buscarLetras, argv[i+1]);
+    pthread_create(&threads[i], NULL, lectorArchivoThread, argv[i+1]);
   }
+
 
   //Para esperar por el término de todos los hilos 
   for (i=0; i< argc - 1; i++) {
     pthread_join(threads[i], NULL);
   }
-  */
+  end = chrono::system_clock::now();
   
-
+  segundos = end - start;
+  std::cout << "segundos: " << segundos.count() << '\n';
 
   return 0;
 }
