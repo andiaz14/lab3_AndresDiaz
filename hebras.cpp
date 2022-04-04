@@ -8,6 +8,7 @@
 
 using namespace std;
 
+//clase para el leer los archivos secuencialmente.
 class LectorArchivoSecuencial
 {
   private:
@@ -24,6 +25,7 @@ class LectorArchivoSecuencial
     caracteresTotal = 0;
   }
 
+  //metodo para contar las lineas, palabras y caracteres del archivo
   void leer()
   {
     char c[2];
@@ -82,23 +84,13 @@ class LectorArchivoSecuencial
 
     }
 
-    int getLineasTotal()
-    {
-      return lineasTotal;
-    }
-    int getPalabrasTotal()
-    {
-      return palabrasTotal;
-    }
-    int getCaracteresTotal()
-    {
-      return caracteresTotal;
-    }
+    //metodo para setear el archivo, asi cambiamos de por cada archivo y vamos sumando sus totales
     void setArchivo(char* param)
     {
       archivo = param;  
     }
 
+    //metodo para printear el total.
     void printTotal()
     {
       string letter;
@@ -122,6 +114,7 @@ class LectorArchivoSecuencial
     }
 };
 
+//struct para guardar los datos de los archivos.
 typedef struct 
 {
   char *archivo;
@@ -130,6 +123,7 @@ typedef struct
   int caracteres;
 }DatosArchivo;
 
+//metodo para contar las lineas, palabras y caracteres por medio de hebras
 void *lectorArchivoThread (void *param) {
   DatosArchivo *archivo;
   char c[2];
@@ -165,21 +159,6 @@ void *lectorArchivoThread (void *param) {
     }
   }
   close (stream);
-  
-  /*std::ostringstream oss;
-  oss << lineCount;
-  line = oss.str();
-  std::ostringstream oss1;
-  oss1 << wordCount;
-  word = oss1.str();
-  std::ostringstream oss2;
-  oss2 << charCount;
-  letter = oss2.str();
-
-
-  string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
-
-  std::cout << "texto: " << archivo << ", " << str;*/
 
   archivo->lineas = lineCount;
   archivo->palabras = wordCount;
@@ -188,6 +167,7 @@ void *lectorArchivoThread (void *param) {
   pthread_exit(0);
 }
 
+//metodo para printear el total conseguidos por las hebras
 void printTotal(int lTotal, int pTotal, int cTotal)
 {
   string letter;
@@ -212,6 +192,7 @@ void printTotal(int lTotal, int pTotal, int cTotal)
 
 int main(int argc, char *argv[]) {
 
+  //empezamos por la secuencial
   std::cout << "Secuencial" << '\n';
   auto start = chrono::system_clock::now();
 
@@ -229,6 +210,8 @@ int main(int argc, char *argv[]) {
   chrono::duration<double> segundos = end - start;
 
   std::cout << "segundos: " << segundos.count() << '\n';
+
+  //ahora pasamos a las hebras
   std::cout << "Por hebras." << '\n';
   start = chrono::system_clock::now();
 
@@ -259,6 +242,8 @@ int main(int argc, char *argv[]) {
     pthread_join(threads[i], NULL);
   }
 
+  //para conseguir el numero de lineas, palabras y letras de las estructuras de datos,
+  //printearlas y despues sumarselas al total
   for(i = 0; i<argc-1;i++)
   {
     string line;
