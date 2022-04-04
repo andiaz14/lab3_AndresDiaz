@@ -8,62 +8,130 @@
 
 using namespace std;
 
-void lectorArchivoSecuencial(char* archivo)
+class LectorArchivoSecuencial
 {
-  char c[2];
-  string line;
-  int lineCount = 0;
-  string word;
-  int wordCount = 0;
-  string letter;
-  int charCount = 0;
+  private:
+    int lineasTotal;
+    int palabrasTotal;
+    int caracteresTotal;
+    char* archivo;
+  public:
 
-
-  int stream  = open(archivo, O_RDONLY);
-
-  if(stream == -1)
+  LectorArchivoSecuencial()
   {
-    std::cout << "Error al abrir archivo" << std::endl;
-    return;
+    lineasTotal = 0;
+    palabrasTotal = 0;
+    caracteresTotal = 0;
   }
 
-  while(read(stream,c,1))
+  void leer()
   {
-    if(c[0] == '\n')
+    char c[2];
+    string line;
+    int lineCount = 0;
+    string word;
+    int wordCount = 0;
+    string letter;
+    int charCount = 0;
+
+
+    int stream  = open(archivo, O_RDONLY);
+
+    if(stream == -1)
     {
-      lineCount++;
-      wordCount++;
+      std::cout << "Error al abrir archivo" << std::endl;
+      return;
     }
-    else if(c[0] == ' ')
+
+    while(read(stream,c,1))
     {
-      wordCount++;
+      if(c[0] == '\n')
+      {
+        lineCount++;
+        lineasTotal++;
+        wordCount++;
+        palabrasTotal++;
+      }
+      else if(c[0] == ' ')
+      {
+        wordCount++;
+        palabrasTotal++;
+      }
+      else if((c[0] >= 'a' && c[0] <= 'z')||(c[0]>='A' && c[0]<='Z'))
+      {
+        charCount++;
+        caracteresTotal++;
+      }
     }
-    else if((c[0] >= 'a' && c[0] <= 'z')||(c[0]>='A' && c[0]<='Z'))
+    close (stream);
+
+    std::ostringstream oss;
+    oss << lineCount;
+    line = oss.str();
+    std::ostringstream oss1;
+    oss1 << wordCount;
+    word = oss1.str();
+    std::ostringstream oss2;
+    oss2 << charCount;
+    letter = oss2.str();
+
+
+    string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
+
+    std::cout << "texto: " << archivo << ", " << str;
+
+    }
+
+    int getLineasTotal()
     {
-      charCount++;
+      return lineasTotal;
     }
-  }
-  close (stream);
+    int getPalabrasTotal()
+    {
+      return palabrasTotal;
+    }
+    int getCaracteresTotal()
+    {
+      return caracteresTotal;
+    }
+    void setArchivo(char* param)
+    {
+      archivo = param;  
+    }
 
-  std::ostringstream oss;
-  oss << lineCount;
-  line = oss.str();
-  std::ostringstream oss1;
-  oss1 << wordCount;
-  word = oss1.str();
-  std::ostringstream oss2;
-  oss2 << charCount;
-  letter = oss2.str();
+    void printTotal()
+    {
+      string letter;
+      string word;
+      string line;
 
+      std::ostringstream oss;
+      oss << lineasTotal;
+      line = oss.str();
+      std::ostringstream oss1;
+      oss1 << palabrasTotal;
+      word = oss1.str();
+      std::ostringstream oss2;
+      oss2 << caracteresTotal;
+      letter = oss2.str();
 
-  string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
+      string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
 
-  std::cout << "texto: " << archivo << ", " << str;
+      std::cout << "total: " << str;
 
-}
+    }
+};
+
+typedef struct 
+{
+  char *archivo;
+  int lineas;
+  int palabras;
+  int caracteres;
+}DatosArchivo;
 
 void *lectorArchivoThread (void *param) {
-  char *archivo;
+  DatosArchivo *archivo;
   char c[2];
   string line;
   int lineCount = 0;
@@ -72,9 +140,9 @@ void *lectorArchivoThread (void *param) {
   string letter;
   int charCount = 0;
 
-  archivo = (char *) param;
+  archivo = (DatosArchivo *) param;
 
-  int stream = open (archivo, O_RDONLY);
+  int stream = open (archivo->archivo, O_RDONLY);
 
   if (stream == -1) {
     std::cout << "Error al abrir archivo" << std::endl;
@@ -98,7 +166,7 @@ void *lectorArchivoThread (void *param) {
   }
   close (stream);
   
-  std::ostringstream oss;
+  /*std::ostringstream oss;
   oss << lineCount;
   line = oss.str();
   std::ostringstream oss1;
@@ -111,9 +179,34 @@ void *lectorArchivoThread (void *param) {
 
   string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
 
-  std::cout << "texto: " << archivo << ", " << str;
+  std::cout << "texto: " << archivo << ", " << str;*/
+
+  archivo->lineas = lineCount;
+  archivo->palabras = wordCount;
+  archivo->caracteres = charCount;
 
   pthread_exit(0);
+}
+
+void printTotal(int lTotal, int pTotal, int cTotal)
+{
+  string letter;
+  string word;
+  string line;
+
+  std::ostringstream oss;
+  oss << lTotal;
+  line = oss.str();
+  std::ostringstream oss1;
+  oss1 << pTotal;
+  word = oss1.str();
+  std::ostringstream oss2;
+  oss2 << cTotal;
+  letter = oss2.str();
+
+  string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
+
+  std::cout << "total: " << str;
 }
 
 
@@ -122,10 +215,15 @@ int main(int argc, char *argv[]) {
   std::cout << "Secuencial" << '\n';
   auto start = chrono::system_clock::now();
 
+  LectorArchivoSecuencial lector1 = LectorArchivoSecuencial();
+
   for(int i = 0; i < argc -1; i++)
   {
-    lectorArchivoSecuencial(argv[i+1]);
+    lector1.setArchivo(argv[i+1]);
+    lector1.leer();
   }
+
+  lector1.printTotal();
 
   auto end = chrono::system_clock::now();
   chrono::duration<double> segundos = end - start;
@@ -133,12 +231,26 @@ int main(int argc, char *argv[]) {
   std::cout << "segundos: " << segundos.count() << '\n';
   std::cout << "Por hebras." << '\n';
   start = chrono::system_clock::now();
+
+  int lineasTotal = 0;
+  int palabrasTotal = 0;
+  int caracteresTotal = 0;
+  
+  DatosArchivo datos[argc-1];
+
+  for(int i = 0; i<argc -1; i++)
+  {
+    datos[i].archivo = argv[i+1];
+    datos[i].lineas = 0;
+    datos[i].palabras = 0;
+    datos[i].caracteres = 0;
+  }
   pthread_t threads[argc - 1];
   int i = 0;
   
   //Crea todos los hilos 
   for (i=0; i < argc - 1; i++) {
-    pthread_create(&threads[i], NULL, lectorArchivoThread, argv[i+1]);
+    pthread_create(&threads[i], NULL, lectorArchivoThread, &datos[i]);
   }
 
 
@@ -146,6 +258,34 @@ int main(int argc, char *argv[]) {
   for (i=0; i< argc - 1; i++) {
     pthread_join(threads[i], NULL);
   }
+
+  for(i = 0; i<argc-1;i++)
+  {
+    string line;
+    string word;
+    string letter;
+
+    std::ostringstream oss;
+    oss << datos[i].lineas;
+    line = oss.str();
+    std::ostringstream oss1;
+    oss1 << datos[i].palabras;
+    word= oss1.str();
+    std::ostringstream oss2;
+    oss2 << datos[i].caracteres;
+    letter = oss2.str();
+
+
+    string str = "lineas: " + line + ", palabras: " + word + ", caracteres: " + letter  + "\n";
+
+    std::cout << "texto: " << datos[i].archivo << ", " << str;
+
+    lineasTotal = lineasTotal + datos[i].lineas;
+    palabrasTotal = palabrasTotal + datos[i].palabras;
+    caracteresTotal = caracteresTotal + datos[i].caracteres;
+  }
+
+  printTotal(lineasTotal,palabrasTotal,caracteresTotal);
   end = chrono::system_clock::now();
   
   segundos = end - start;
